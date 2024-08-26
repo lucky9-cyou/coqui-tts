@@ -313,6 +313,28 @@ class SpeakerManager:
             return (d_vectors / len(wav_file))[0].tolist()
         d_vector = _compute(wav_file)
         return d_vector[0].tolist()
+    
+    def compute_d_vector_from_clip_waveform(self, waveform: torch.Tensor) -> torch.Tensor:
+        """Compute a d_vector from a given waveform.
+
+        Args:
+            waveform (torch.Tensor): Target waveform.
+
+        Returns:
+            torch.Tensor: Computed d_vector.
+        """
+        def _compute(waveform: torch.Tensor):
+            m_input = waveform
+            if self.use_cuda:
+                m_input = m_input.cuda()
+            m_input = m_input.unsqueeze(0)
+            d_vector = self.speaker_encoder.compute_embedding(m_input)
+            return d_vector
+
+        d_vector = _compute(waveform) 
+        return d_vector
+
+        
 
     def compute_d_vector(self, feats: Union[torch.Tensor, np.ndarray]) -> List:
         """Compute d_vector from features.

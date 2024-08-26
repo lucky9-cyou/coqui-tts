@@ -245,7 +245,7 @@ def synthesis(
         if speaker_id is not None:
             speaker_id = id_to_torch(speaker_id, cuda=use_cuda)
 
-        if d_vector is not None:
+        if d_vector is not None and type(d_vector) == np.ndarray:
             d_vector = embedding_to_torch(d_vector, cuda=use_cuda)
 
         if language_id is not None:
