@@ -167,16 +167,14 @@ class ResNetSpeakerEncoder(nn.Module):
         return out
 
     def forward(self, x, l2_norm=False):
-        with torch.no_grad():
-            with torch.cuda.amp.autocast(enabled=False):
-                if self.use_torch_spec:
-                    x = self.torch_spec(x)
-                else:
-                    x = x.transpose(1, 2)
+        if self.use_torch_spec:
+            x = self.torch_spec(x)
+        else:
+            x = x.transpose(1, 2)
 
-                if self.log_input:
-                    x = (x + 1e-6).log()
-                x = self.instancenorm(x).unsqueeze(1)
+        if self.log_input:
+            x = (x + 1e-6).log()
+        x = self.instancenorm(x).unsqueeze(1)
 
         x = self.conv1(x)
         x = self.relu(x)
@@ -205,7 +203,6 @@ class ResNetSpeakerEncoder(nn.Module):
             x = torch.nn.functional.normalize(x, p=2, dim=1)
         return x
 
-    # @torch.no_grad()
     def compute_embedding(self, x, num_frames=250, num_eval=10, return_mean=True):
         """
         Generate embeddings for a batch of utterances
@@ -220,9 +217,7 @@ class ResNetSpeakerEncoder(nn.Module):
         if max_len < num_frames:
             num_frames = max_len
 
-        # offsets = np.linspace(0, max_len - num_frames, num=num_eval)
-        offsets = torch.linspace(0, max_len - num_frames, steps=num_eval).long()
-        print('offsets requires_grad: ', offsets.requires_grad)
+        offsets = torch.linspace(0, max_len - num_frames, steps=num_eval)
 
         frames_batch = []
         for offset in offsets:
@@ -232,14 +227,10 @@ class ResNetSpeakerEncoder(nn.Module):
             frames_batch.append(frames)
 
         frames_batch = torch.cat(frames_batch, dim=0)
-        print(frames_batch.requires_grad)
-              
         embeddings = self.forward(frames_batch, l2_norm=True)
-        print(embeddings.requires_grad)
 
         if return_mean:
             embeddings = torch.mean(embeddings, dim=0, keepdim=True)
-            print(embeddings.requires_grad)
 
         return embeddings
 

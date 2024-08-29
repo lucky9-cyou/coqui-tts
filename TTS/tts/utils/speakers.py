@@ -61,6 +61,7 @@ class SpeakerManager:
         encoder_model_path: str = "",
         encoder_config_path: str = "",
         use_cuda: bool = False,
+        is_eval: bool = True,
     ):
 
         self.data_items = []
@@ -70,6 +71,7 @@ class SpeakerManager:
         self.speaker_encoder = None
         self.speaker_encoder_ap = None
         self.use_cuda = use_cuda
+        self.is_eval = is_eval
 
         if data_items:
             self.speaker_ids, self.speaker_names, _ = self.parse_speakers_from_data(self.data_items)
@@ -271,7 +273,7 @@ class SpeakerManager:
         """
         self.speaker_encoder_config = load_config(config_path)
         self.speaker_encoder = setup_model(self.speaker_encoder_config)
-        self.speaker_encoder.load_checkpoint(config_path, model_path, eval=True, use_cuda=self.use_cuda)
+        self.speaker_encoder.load_checkpoint(config_path, model_path, eval=self.is_eval, use_cuda=self.use_cuda)
         self.speaker_encoder_ap = AudioProcessor(**self.speaker_encoder_config.audio)
         # normalize the input audio level and trim silences
         # self.speaker_encoder_ap.do_sound_norm = True
@@ -325,13 +327,10 @@ class SpeakerManager:
         """
         def _compute(waveform: torch.Tensor):
             m_input = waveform
-            if self.use_cuda:
-                m_input = m_input.cuda()
             m_input = m_input.unsqueeze(0)
             d_vector = self.speaker_encoder.compute_embedding(m_input)
             return d_vector
-
-        d_vector = _compute(waveform) 
+        d_vector = _compute(waveform)
         return d_vector
 
         
