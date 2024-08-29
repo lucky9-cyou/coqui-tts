@@ -182,12 +182,12 @@ class VitsArgs(Coqpit):
         num_languages (int):
             Number of languages for the language embedding layer. Defaults to 0.
 
-        use_speaker_encoder_as_loss (bool): 
+        use_speaker_encoder_as_loss (bool):
             Enable/Disable Speaker Consistency Loss (SCL). Defaults to False.
 
         speaker_encoder_config_path (str):
             Path to the file speaker encoder config file, to use for SCL. Defaults to "".
-        
+
         speaker_encoder_model_path (str):
             Path to the file speaker encoder checkpoint file, to use for SCL. Defaults to "".
 
@@ -249,7 +249,6 @@ class VitsArgs(Coqpit):
     freeze_PE: bool = False
     freeze_flow_decoder: bool = False
     freeze_waveform_decoder: bool = False
-
 
 
 class Vits(BaseTTS):
@@ -326,7 +325,7 @@ class Vits(BaseTTS):
             args.num_layers_text_encoder,
             args.kernel_size_text_encoder,
             args.dropout_p_text_encoder,
-            language_emb_dim=self.embedded_language_dim
+            language_emb_dim=self.embedded_language_dim,
         )
 
         self.posterior_encoder = PosteriorEncoder(
@@ -420,16 +419,26 @@ class Vits(BaseTTS):
 
         if config.use_speaker_encoder_as_loss:
             if not config.speaker_encoder_model_path or not config.speaker_encoder_config_path:
-                raise RuntimeError(" [!] To use the speaker encoder loss you need to specify speaker_encoder_model_path and speaker_encoder_config_path !!")
-            self.speaker_manager.init_speaker_encoder(config.speaker_encoder_model_path, config.speaker_encoder_config_path)
+                raise RuntimeError(
+                    " [!] To use the speaker encoder loss you need to specify speaker_encoder_model_path and speaker_encoder_config_path !!"
+                )
+            self.speaker_manager.init_speaker_encoder(
+                config.speaker_encoder_model_path, config.speaker_encoder_config_path
+            )
             self.speaker_encoder = self.speaker_manager.speaker_encoder.train()
             for param in self.speaker_encoder.parameters():
                 param.requires_grad = False
 
             print(" > External Speaker Encoder Loaded !!")
 
-            if hasattr(self.speaker_encoder, "audio_config") and self.audio_config["sample_rate"] != self.speaker_encoder.audio_config["sample_rate"]:
-                self.audio_transform = torchaudio.transforms.Resample(orig_freq=self.audio_config["sample_rate"], new_freq=self.speaker_encoder.audio_config["sample_rate"])
+            if (
+                hasattr(self.speaker_encoder, "audio_config")
+                and self.audio_config["sample_rate"] != self.speaker_encoder.audio_config["sample_rate"]
+            ):
+                self.audio_transform = torchaudio.transforms.Resample(
+                    orig_freq=self.audio_config["sample_rate"],
+                    new_freq=self.speaker_encoder.audio_config["sample_rate"],
+                )
             else:
                 self.audio_transform = None
         else:
@@ -518,7 +527,7 @@ class Vits(BaseTTS):
             g = self.emb_g(sid).unsqueeze(-1)  # [b, h, 1]
 
         # language embedding
-        lang_emb=None
+        lang_emb = None
         if self.args.use_language_embedding and lid is not None:
             lang_emb = self.emb_l(lid).unsqueeze(-1)
 
@@ -535,9 +544,9 @@ class Vits(BaseTTS):
         with torch.no_grad():
             o_scale = torch.exp(-2 * logs_p)
             logp1 = torch.sum(-0.5 * math.log(2 * math.pi) - logs_p, [1]).unsqueeze(-1)  # [b, t, 1]
-            logp2 = torch.einsum("klm, kln -> kmn", [o_scale, -0.5 * (z_p ** 2)])
+            logp2 = torch.einsum("klm, kln -> kmn", [o_scale, -0.5 * (z_p**2)])
             logp3 = torch.einsum("klm, kln -> kmn", [m_p * o_scale, z_p])
-            logp4 = torch.sum(-0.5 * (m_p ** 2) * o_scale, [1]).unsqueeze(-1)  # [b, t, 1]
+            logp4 = torch.sum(-0.5 * (m_p**2) * o_scale, [1]).unsqueeze(-1)  # [b, t, 1]
             logp = logp2 + logp3 + logp1 + logp4
             attn = maximum_path(logp, attn_mask.squeeze(1)).unsqueeze(1).detach()
 
@@ -572,9 +581,9 @@ class Vits(BaseTTS):
         o = self.waveform_decoder(z_slice, g=g)
 
         wav_seg = segment(
-                waveform.transpose(1, 2),
-                slice_ids * self.config.audio.hop_length,
-                self.args.spec_segment_size * self.config.audio.hop_length,
+            waveform.transpose(1, 2),
+            slice_ids * self.config.audio.hop_length,
+            self.args.spec_segment_size * self.config.audio.hop_length,
         )
 
         if self.args.use_speaker_encoder_as_loss and self.speaker_encoder is not None:
@@ -604,7 +613,7 @@ class Vits(BaseTTS):
                 "logs_q": logs_q,
                 "waveform_seg": wav_seg,
                 "gt_spk_emb": gt_spk_emb,
-                "syn_spk_emb": syn_spk_emb
+                "syn_spk_emb": syn_spk_emb,
             }
         )
         return outputs
@@ -646,7 +655,7 @@ class Vits(BaseTTS):
                 g = self.emb_g(sid).unsqueeze(-1)  # [b, h, 1]
 
             # language embedding
-            lang_emb=None
+            lang_emb = None
             if self.args.use_language_embedding and lid is not None:
                 lang_emb = self.emb_l(lid).unsqueeze(-1)
 
@@ -663,9 +672,9 @@ class Vits(BaseTTS):
             with torch.no_grad():
                 o_scale = torch.exp(-2 * logs_p)
                 logp1 = torch.sum(-0.5 * math.log(2 * math.pi) - logs_p, [1]).unsqueeze(-1)  # [b, t, 1]
-                logp2 = torch.einsum("klm, kln -> kmn", [o_scale, -0.5 * (z_p ** 2)])
+                logp2 = torch.einsum("klm, kln -> kmn", [o_scale, -0.5 * (z_p**2)])
                 logp3 = torch.einsum("klm, kln -> kmn", [m_p * o_scale, z_p])
-                logp4 = torch.sum(-0.5 * (m_p ** 2) * o_scale, [1]).unsqueeze(-1)  # [b, t, 1]
+                logp4 = torch.sum(-0.5 * (m_p**2) * o_scale, [1]).unsqueeze(-1)  # [b, t, 1]
                 logp = logp2 + logp3 + logp1 + logp4
                 attn = maximum_path(logp, attn_mask.squeeze(1)).unsqueeze(1).detach()
 
@@ -688,9 +697,9 @@ class Vits(BaseTTS):
         o = self.waveform_decoder(z_slice, g=g)
 
         wav_seg = segment(
-                waveform.transpose(1, 2),
-                slice_ids * self.config.audio.hop_length,
-                self.args.spec_segment_size * self.config.audio.hop_length,
+            waveform.transpose(1, 2),
+            slice_ids * self.config.audio.hop_length,
+            self.args.spec_segment_size * self.config.audio.hop_length,
         )
 
         if self.args.use_speaker_encoder_as_loss and self.speaker_encoder is not None:
@@ -721,7 +730,7 @@ class Vits(BaseTTS):
                 "logs_q": logs_q,
                 "waveform_seg": wav_seg,
                 "gt_spk_emb": gt_spk_emb,
-                "syn_spk_emb": syn_spk_emb
+                "syn_spk_emb": syn_spk_emb,
             }
         )
         return outputs
@@ -741,14 +750,16 @@ class Vits(BaseTTS):
             g = self.emb_g(sid).unsqueeze(-1)
 
         # language embedding
-        lang_emb=None
+        lang_emb = None
         if self.args.use_language_embedding and lid is not None:
             lang_emb = self.emb_l(lid).unsqueeze(-1)
 
         x, m_p, logs_p, x_mask = self.text_encoder(x, x_lengths, lang_emb=lang_emb)
 
         if self.args.use_sdp:
-            logw = self.duration_predictor(x, x_mask, g=g, reverse=True, noise_scale=self.inference_noise_scale_dp, lang_emb=lang_emb)
+            logw = self.duration_predictor(
+                x, x_mask, g=g, reverse=True, noise_scale=self.inference_noise_scale_dp, lang_emb=lang_emb
+            )
         else:
             logw = self.duration_predictor(x, x_mask, g=g, lang_emb=lang_emb)
 
@@ -817,7 +828,7 @@ class Vits(BaseTTS):
             for param in self.text_encoder.parameters():
                 param.requires_grad = False
 
-            if hasattr(self, 'emb_l'):
+            if hasattr(self, "emb_l"):
                 for param in self.emb_l.parameters():
                     param.requires_grad = False
 
@@ -883,7 +894,7 @@ class Vits(BaseTTS):
             with autocast(enabled=False):  # use float32 for the criterion
                 loss_dict = criterion[optimizer_idx](
                     waveform_hat=outputs["model_outputs"].float(),
-                    waveform= outputs["waveform_seg"].float(),
+                    waveform=outputs["waveform_seg"].float(),
                     z_p=outputs["z_p"].float(),
                     logs_q=outputs["logs_q"].float(),
                     m_p=outputs["m_p"].float(),
@@ -896,7 +907,7 @@ class Vits(BaseTTS):
                     fine_tuning_mode=self.args.fine_tuning_mode,
                     use_speaker_encoder_as_loss=self.args.use_speaker_encoder_as_loss,
                     gt_spk_emb=outputs["gt_spk_emb"],
-                    syn_spk_emb=outputs["syn_spk_emb"]
+                    syn_spk_emb=outputs["syn_spk_emb"],
                 )
 
         elif optimizer_idx == 1:

@@ -10,11 +10,19 @@ output_path = os.path.join(get_tests_output_path(), "train_outputs")
 
 
 dataset_config1 = BaseDatasetConfig(
-    name="ljspeech", meta_file_train="metadata.csv", meta_file_val="metadata.csv", path="tests/data/ljspeech", language="en"
+    name="ljspeech",
+    meta_file_train="metadata.csv",
+    meta_file_val="metadata.csv",
+    path="tests/data/ljspeech",
+    language="en",
 )
 
 dataset_config2 = BaseDatasetConfig(
-    name="ljspeech", meta_file_train="metadata.csv", meta_file_val="metadata.csv", path="tests/data/ljspeech", language="en2"
+    name="ljspeech",
+    meta_file_train="metadata.csv",
+    meta_file_val="metadata.csv",
+    path="tests/data/ljspeech",
+    language="en2",
 )
 
 config = VitsConfig(

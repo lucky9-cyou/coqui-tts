@@ -83,7 +83,7 @@ class TorchSTFT(nn.Module):  # pylint: disable=abstract-method
         )
         M = o[:, :, :, 0]
         P = o[:, :, :, 1]
-        S = torch.sqrt(torch.clamp(M ** 2 + P ** 2, min=1e-8))
+        S = torch.sqrt(torch.clamp(M**2 + P**2, min=1e-8))
         if self.use_mel:
             S = torch.matmul(self.mel_basis.to(x), S)
         if self.do_amp_to_db:
@@ -552,8 +552,8 @@ class AudioProcessor(object):
         S = self._db_to_amp(S)
         # Reconstruct phase
         if self.preemphasis != 0:
-            return self.apply_inv_preemphasis(self._griffin_lim(S ** self.power))
-        return self._griffin_lim(S ** self.power)
+            return self.apply_inv_preemphasis(self._griffin_lim(S**self.power))
+        return self._griffin_lim(S**self.power)
 
     def inv_melspectrogram(self, mel_spectrogram: np.ndarray) -> np.ndarray:
         """Convert a melspectrogram to a waveform using Griffi-Lim vocoder."""
@@ -561,8 +561,8 @@ class AudioProcessor(object):
         S = self._db_to_amp(D)
         S = self._mel_to_linear(S)  # Convert back to linear
         if self.preemphasis != 0:
-            return self.apply_inv_preemphasis(self._griffin_lim(S ** self.power))
-        return self._griffin_lim(S ** self.power)
+            return self.apply_inv_preemphasis(self._griffin_lim(S**self.power))
+        return self._griffin_lim(S**self.power)
 
     def out_linear_to_mel(self, linear_spec: np.ndarray) -> np.ndarray:
         """Convert a full scale linear spectrogram output of a network to a melspectrogram.
@@ -714,7 +714,7 @@ class AudioProcessor(object):
 
     @staticmethod
     def mulaw_encode(wav: np.ndarray, qc: int) -> np.ndarray:
-        mu = 2 ** qc - 1
+        mu = 2**qc - 1
         # wav_abs = np.minimum(np.abs(wav), 1.0)
         signal = np.sign(wav) * np.log(1 + mu * np.abs(wav)) / np.log(1.0 + mu)
         # Quantize signal to the specified number of levels.
@@ -726,13 +726,13 @@ class AudioProcessor(object):
     @staticmethod
     def mulaw_decode(wav, qc):
         """Recovers waveform from quantized values."""
-        mu = 2 ** qc - 1
+        mu = 2**qc - 1
         x = np.sign(wav) / mu * ((1 + mu) ** np.abs(wav) - 1)
         return x
 
     @staticmethod
     def encode_16bits(x):
-        return np.clip(x * 2 ** 15, -(2 ** 15), 2 ** 15 - 1).astype(np.int16)
+        return np.clip(x * 2**15, -(2**15), 2**15 - 1).astype(np.int16)
 
     @staticmethod
     def quantize(x: np.ndarray, bits: int) -> np.ndarray:
@@ -745,12 +745,12 @@ class AudioProcessor(object):
         Returns:
             np.ndarray: Quantized waveform.
         """
-        return (x + 1.0) * (2 ** bits - 1) / 2
+        return (x + 1.0) * (2**bits - 1) / 2
 
     @staticmethod
     def dequantize(x, bits):
         """Dequantize a waveform from the given number of bits."""
-        return 2 * x / (2 ** bits - 1) - 1
+        return 2 * x / (2**bits - 1) - 1
 
 
 def _log(x, base):

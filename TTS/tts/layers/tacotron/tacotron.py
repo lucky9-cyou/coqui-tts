@@ -149,7 +149,7 @@ class CBHG(nn.Module):
         activations += [None]
         # setup conv1d projection layers
         layer_set = []
-        for (in_size, out_size, ac) in zip(out_features, conv_projections, activations):
+        for in_size, out_size, ac in zip(out_features, conv_projections, activations):
             layer = BatchNormConv1d(in_size, out_size, kernel_size=3, stride=1, padding=[1, 1], activation=ac)
             layer_set.append(layer)
         self.conv1d_projections = nn.ModuleList(layer_set)

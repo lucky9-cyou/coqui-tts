@@ -228,7 +228,7 @@ class Wavernn(BaseVocoder):
         self.config = config
 
         if isinstance(self.args.mode, int):
-            self.n_classes = 2 ** self.args.mode
+            self.n_classes = 2**self.args.mode
         elif self.args.mode == "mold":
             self.n_classes = 3 * 10
         elif self.args.mode == "gauss":

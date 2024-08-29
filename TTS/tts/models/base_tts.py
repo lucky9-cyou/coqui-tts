@@ -117,7 +117,7 @@ class BaseTTS(BaseModel):
         else:
             text = sentence_info
 
-        # get speaker  id/d_vector 
+        # get speaker  id/d_vector
         speaker_id, d_vector, language_id = None, None, None
         if hasattr(self, "speaker_manager"):
             if config.use_d_vector_file:
@@ -135,7 +135,13 @@ class BaseTTS(BaseModel):
         if hasattr(self, "language_manager") and config.use_language_embedding and language_name is not None:
             language_id = self.language_manager.language_id_mapping[language_name]
 
-        return {"text": text, "speaker_id": speaker_id, "style_wav": style_wav, "d_vector": d_vector, "language_id": language_id}
+        return {
+            "text": text,
+            "speaker_id": speaker_id,
+            "style_wav": style_wav,
+            "d_vector": d_vector,
+            "language_id": language_id,
+        }
 
     def format_batch(self, batch: Dict) -> Dict:
         """Generic batch formatting for `TTSDataset`.
@@ -230,11 +236,7 @@ class BaseTTS(BaseModel):
             # setup multi-speaker attributes
             if hasattr(self, "speaker_manager"):
                 speaker_id_mapping = self.speaker_manager.speaker_ids if model_args.use_speaker_embedding else None
-                d_vector_mapping = (
-                    self.speaker_manager.d_vectors
-                    if model_args.use_d_vector_file
-                    else None
-                )
+                d_vector_mapping = self.speaker_manager.d_vectors if model_args.use_d_vector_file else None
 
             else:
                 speaker_id_mapping = None
@@ -246,7 +248,9 @@ class BaseTTS(BaseModel):
                 custom_symbols = self.make_symbols(self.config)
 
             if hasattr(self, "language_manager"):
-                language_id_mapping = self.language_manager.language_id_mapping if model_args.use_language_embedding else None
+                language_id_mapping = (
+                    self.language_manager.language_id_mapping if model_args.use_language_embedding else None
+                )
             else:
                 language_id_mapping = None
 

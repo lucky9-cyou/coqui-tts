@@ -228,7 +228,9 @@ class Trainer:
             if getattr(config, "use_speaker_embedding", False) or getattr(config, "use_d_vector_file", False):
                 # save speakers json
                 if config.use_speaker_embedding and not config.use_d_vector_file:
-                    self.model.speaker_manager.save_speaker_ids_to_file(os.path.join(self.output_path, "speaker_ids.json"))
+                    self.model.speaker_manager.save_speaker_ids_to_file(
+                        os.path.join(self.output_path, "speaker_ids.json")
+                    )
                 elif config.use_d_vector_file:
                     self.model.speaker_manager.save_d_vectors_to_file(os.path.join(self.output_path, "speakers.json"))
 
@@ -244,7 +246,9 @@ class Trainer:
             config = self.config.model_args if hasattr(self.config, "model_args") else self.config
             # save speakers json
             if config.use_language_embedding and self.model.language_manager.num_languages > 1:
-                self.model.language_manager.save_language_ids_to_file(os.path.join(self.output_path, "language_ids.json"))
+                self.model.language_manager.save_language_ids_to_file(
+                    os.path.join(self.output_path, "language_ids.json")
+                )
             if hasattr(self.config, "model_args"):
                 self.config.model_args["num_languages"] = self.model.language_manager.num_languages
             else:
@@ -548,9 +552,7 @@ class Trainer:
                 # https://nvidia.github.io/apex/advanced.html?highlight=accumulate#backward-passes-with-multiple-optimizers
                 with amp.scale_loss(loss_dict["loss"], optimizer) as scaled_loss:
                     scaled_loss.backward()
-                grad_norm = torch.nn.utils.clip_grad_norm_(
-                    amp.master_params(optimizer), grad_clip
-                )
+                grad_norm = torch.nn.utils.clip_grad_norm_(amp.master_params(optimizer), grad_clip)
             else:
                 # model optimizer step in mixed precision mode
                 scaler.scale(loss_dict["loss"]).backward()

@@ -315,7 +315,7 @@ class SpeakerManager:
             return (d_vectors / len(wav_file))[0].tolist()
         d_vector = _compute(wav_file)
         return d_vector[0].tolist()
-    
+
     def compute_d_vector_from_clip_waveform(self, waveform: torch.Tensor) -> torch.Tensor:
         """Compute a d_vector from a given waveform.
 
@@ -325,15 +325,15 @@ class SpeakerManager:
         Returns:
             torch.Tensor: Computed d_vector.
         """
+
         def _compute(waveform: torch.Tensor):
             m_input = waveform
             m_input = m_input.unsqueeze(0)
             d_vector = self.speaker_encoder.compute_embedding(m_input)
             return d_vector
+
         d_vector = _compute(waveform)
         return d_vector
-
-        
 
     def compute_d_vector(self, feats: Union[torch.Tensor, np.ndarray]) -> List:
         """Compute d_vector from features.
@@ -454,11 +454,12 @@ def get_speaker_manager(c: Coqpit, data: List = None, restore_path: str = None, 
                 speaker_manager.save_speaker_ids_to_file(out_file_path)
     return speaker_manager
 
+
 def get_speaker_weighted_sampler(items: list):
     speaker_names = np.array([item[2] for item in items])
     unique_speaker_names = np.unique(speaker_names).tolist()
     speaker_ids = [unique_speaker_names.index(l) for l in speaker_names]
     speaker_count = np.array([len(np.where(speaker_names == l)[0]) for l in unique_speaker_names])
-    weight_speaker = 1. / speaker_count
+    weight_speaker = 1.0 / speaker_count
     dataset_samples_weight = torch.from_numpy(np.array([weight_speaker[l] for l in speaker_ids])).double()
     return WeightedRandomSampler(dataset_samples_weight, len(dataset_samples_weight))

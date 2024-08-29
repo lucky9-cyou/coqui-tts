@@ -1,4 +1,5 @@
 """Find all the unique characters in a dataset"""
+
 import argparse
 from argparse import RawTextHelpFormatter
 
@@ -10,6 +11,7 @@ import multiprocessing
 from TTS.tts.utils.text import text2phone
 from tqdm.contrib.concurrent import process_map
 
+
 def compute_phonemes(item):
     try:
         text = item[0]
@@ -18,7 +20,8 @@ def compute_phonemes(item):
     except:
         return []
     return list(set(ph))
-    
+
+
 def main():
     global c
     # pylint: disable=bad-option-value
@@ -50,8 +53,6 @@ def main():
     lower_phones = filter(lambda c: c.islower(), phones)
     phones_force_lower = [c.lower() for c in phones]
     phones_force_lower = set(phones_force_lower)
-
-    
 
     print(f" > Number of unique phonemes: {len(phones)}")
     print(f" > Unique phonemes: {''.join(sorted(phones))}")

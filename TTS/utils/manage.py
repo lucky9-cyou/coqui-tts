@@ -151,7 +151,6 @@ class ModelManager(object):
                     config.speakers_file = output_speakers_id_path
                 config.save_json(config_path)
 
-
         return output_model_path, output_config_path, model_item
 
     def _download_gdrive_file(self, gdrive_idx, output):
