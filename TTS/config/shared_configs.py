@@ -104,6 +104,7 @@ class BaseAudioConfig(Coqpit):
     max_norm: float = 4.0
     clip_norm: bool = True
     stats_path: str = None
+    verbose: bool = False
 
     def check_values(
         self,
@@ -138,6 +139,8 @@ class BaseAudioConfig(Coqpit):
         check_argument("spec_gain", c, restricted=True, min_val=1, max_val=100)
         check_argument("do_trim_silence", c, restricted=True)
         check_argument("trim_db", c, restricted=True)
+        
+        check_argument("verbose", c, restricted=True)
 
 
 @dataclass

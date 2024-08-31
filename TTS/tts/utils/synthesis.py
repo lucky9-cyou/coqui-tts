@@ -240,46 +240,19 @@ def synthesis(
         custom_symbols = model.make_symbols(CONFIG)
     # preprocess the given text
     text_inputs = text_to_seq(text, CONFIG, custom_symbols=custom_symbols)
-    # pass tensors to backend
-    if backend == "torch":
-        if speaker_id is not None:
-            speaker_id = id_to_torch(speaker_id, cuda=use_cuda)
 
-        if d_vector is not None and type(d_vector) == np.ndarray:
-            d_vector = embedding_to_torch(d_vector, cuda=use_cuda)
+    if not isinstance(style_mel, dict):
+        style_mel = numpy_to_torch(style_mel, torch.float, cuda=use_cuda)
+    text_inputs = numpy_to_torch(text_inputs, torch.long, cuda=use_cuda)
+    text_inputs = text_inputs.unsqueeze(0)
 
-        if language_id is not None:
-            language_id = id_to_torch(language_id, cuda=use_cuda)
-
-        if not isinstance(style_mel, dict):
-            style_mel = numpy_to_torch(style_mel, torch.float, cuda=use_cuda)
-        text_inputs = numpy_to_torch(text_inputs, torch.long, cuda=use_cuda)
-        text_inputs = text_inputs.unsqueeze(0)
-    elif backend in ["tf", "tflite"]:
-        # TODO: handle speaker id for tf model
-        style_mel = numpy_to_tf(style_mel, tf.float32)
-        text_inputs = numpy_to_tf(text_inputs, tf.int32)
-        text_inputs = tf.expand_dims(text_inputs, 0)
     # synthesize voice
     if backend == "torch":
         outputs = run_model_torch(model, text_inputs, speaker_id, style_mel, d_vector=d_vector, language_id=language_id)
         model_outputs = outputs["model_outputs"]
-        model_outputs = model_outputs[0].data.cpu().numpy()
+        model_outputs = model_outputs[0].data
         alignments = outputs["alignments"]
-    elif backend == "tf":
-        decoder_output, postnet_output, alignments, stop_tokens = run_model_tf(
-            model, text_inputs, CONFIG, speaker_id, style_mel
-        )
-        model_outputs, decoder_output, alignments, stop_tokens = parse_outputs_tf(
-            postnet_output, decoder_output, alignments, stop_tokens
-        )
-    elif backend == "tflite":
-        decoder_output, postnet_output, alignments, stop_tokens = run_model_tflite(
-            model, text_inputs, CONFIG, speaker_id, style_mel
-        )
-        model_outputs, decoder_output = parse_outputs_tflite(postnet_output, decoder_output)
-    # convert outputs to numpy
-    # plot results
+
     wav = None
     if hasattr(model, "END2END") and model.END2END:
         wav = model_outputs.squeeze(0)
