@@ -250,8 +250,9 @@ def synthesis(
     if backend == "torch":
         outputs = run_model_torch(model, text_inputs, speaker_id, style_mel, d_vector=d_vector, language_id=language_id)
         model_outputs = outputs["model_outputs"]
-        model_outputs = model_outputs[0].data
+        model_outputs = model_outputs[0]
         alignments = outputs["alignments"]
+        z = outputs['z']
 
     wav = None
     if hasattr(model, "END2END") and model.END2END:
@@ -267,5 +268,6 @@ def synthesis(
         "alignments": alignments,
         "text_inputs": text_inputs,
         "outputs": outputs,
+        'z': z
     }
     return return_dict
