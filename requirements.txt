@@ -5,7 +5,7 @@ inflect
 jieba
 librosa==0.8.0
 matplotlib
-numpy==1.19.5
+numpy==1.26.3
 pandas
 pypinyin
 pysbd
@@ -25,3 +25,4 @@ unidic-lite==1.0.8
 # gruut+supported langs
 gruut[cs,de,es,fr,it,nl,pt,ru,sv]~=1.2.0
 fsspec>=2021.04.0
+torchmetrics==1.2.0
